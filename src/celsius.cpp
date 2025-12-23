@@ -2,6 +2,7 @@
 #include <NimBLEDevice.h>
 #include <string>
 #include <vector>
+#include <unordered_set>
 
 // Configuration via #define
 #define SCAN_TIME_S 5
@@ -12,7 +13,7 @@
 static const std::vector<std::string> MAC_WHITELIST = {
     "f7:86:17:6f:ad:57",//notte
     "ca:c8:11:8d:e2:c6",//giardino
-    "f1:39:38:e5:68:0a"//soggiorno
+    "f1:39:38:e5:68:0a",//soggiorno
     "c0:23:17:1f:65:4f"//tavernetta
 };
 
@@ -30,10 +31,87 @@ NimBLEScan* pBLEScan;
 unsigned long lastScanMillis = 0;
 const unsigned long scanIntervalMs = SCAN_INTERVAL_MS; // 1 minute
 
+// Track devices seen during the current scan to avoid duplicate prints
+static std::unordered_set<std::string> seenDevices;
+
 // ----------------------------------------------------------------------
 // 1. DATA CALLBACKS (AdvertisedDeviceCallbacks):
 //    Handles processing data when a device is found.
 // ----------------------------------------------------------------------
+
+// Decode SwitchBot FD3D service data. Returns true if decoded and printed.
+static bool decodeFD3D(const std::string &advLower, uint8_t* sdata, size_t sLen, uint8_t* mdata=nullptr, size_t mLen=0, bool useAlt=false) {
+    int battery = -1;
+    float temperature = NAN;
+    float humidity = NAN;
+    if (sLen >= 3) battery = sdata[2];
+
+    auto inRange = [](float v){ return v > -40.0f && v < 85.0f; };
+
+        // Special-case alternate model at MAC f1:39:38:e5:68:0a
+    if (useAlt) {
+        // Use manufacturer-data mapping observed in captures (PayloadLen==26):
+        // mdata layout: [0..1]=company id, [2..7]=MAC, [8]=battery, [9]=?, [10]=temp_frac, [11]=temp_int+128, [12]=humidity|flags
+        Serial.println("  Using alternate decoder for special meter model (manufacturer-data mapping)");
+        if (mdata != nullptr && mLen >= 13) {
+            int m_battery = (int)mdata[8];
+            int temp_int = (int)mdata[11] - 128;
+            float temp_frac = ((int)mdata[10]) / 10.0f;
+            float t = (temp_int >= 0) ? (float)temp_int + temp_frac : (float)temp_int - temp_frac;
+            float h = (float)(mdata[12] & 0x7F);
+            if (inRange(t)) temperature = t;
+            humidity = (h >= 0.0f && h <= 100.0f) ? h : NAN;
+            Serial.printf("  Battery: %d%%\n", m_battery);
+            Serial.printf("  Temperature: %.1f°C\n", temperature);
+            Serial.printf("  Humidity: %.0f%%\n", humidity);
+            Serial.println("------------------------------------");
+            return true;
+        }
+
+        // Fallback to previous candidates if manufacturer-data not present
+        Serial.println("  Manufacturer-data not present or too short; falling back to candidates");
+        if (sLen >= 2) {
+            uint16_t u16_le = (uint16_t)sdata[0] | ((uint16_t)sdata[1] << 8);
+            float cand_le_div10 = (float)u16_le / 10.0f;
+            if (inRange(cand_le_div10)) temperature = cand_le_div10;
+        }
+        Serial.printf("  Battery (raw): %d\n", (sLen >= 3) ? (int)sdata[2] : -1);
+        if (!isnan(temperature)) Serial.printf("  Chosen Temperature: %.2f°C\n", temperature);
+        else Serial.println("  Chosen Temperature: <unknown>");
+        Serial.println("------------------------------------");
+        return true;
+    }
+
+    // Default decoder (existing heuristic)
+    if (sLen >= 5) {
+        int temp_int = ((int)sdata[4]) - 128;
+        float temp_frac = ((float)sdata[3]) / 10.0f;
+        if (temp_int >= 0) temperature = (float)temp_int + temp_frac;
+        else temperature = (float)temp_int - temp_frac;
+        if (!inRange(temperature)) {
+            int16_t t_be = (int16_t)((sdata[3] << 8) | sdata[4]);
+            float t_be_f = (float)t_be / 10.0f;
+            int8_t t_i8 = (int8_t)sdata[3];
+            float t_i8_f = (float)t_i8;
+            if (inRange(t_be_f)) temperature = t_be_f;
+            else if (inRange(t_i8_f)) temperature = t_i8_f;
+        }
+    } else if (sLen >= 4) {
+        int8_t t_i8 = (int8_t)sdata[3];
+        temperature = (float)t_i8;
+    }
+
+    if (sLen >= 6) humidity = (float)sdata[5];
+
+    Serial.printf("  Battery: %d%%\n", (battery >= 0) ? battery : -1);
+    if (!isnan(temperature)) Serial.printf("  Temperature: %.1f°C\n", temperature);
+    else Serial.println("  Temperature: <unknown>");
+    if (!isnan(humidity)) Serial.printf("  Humidity: %.1f%%\n", humidity);
+    else Serial.println("  Humidity: <unknown>");
+    Serial.println("------------------------------------");
+    return true;
+}
+
 class AdvertisedDeviceCallbacks : public NimBLEAdvertisedDeviceCallbacks {
 public:
     void onResult(NimBLEAdvertisedDevice* advertisedDevice) override {
@@ -54,6 +132,10 @@ public:
             // Ignore blacklisted MACs when whitelist is empty
             for (const auto &b : MAC_BLACKLIST) if (advLower == toLower(b)) return;
         }
+
+        // Deduplicate within a single scan: skip if we've already processed this MAC
+        if (seenDevices.find(advLower) != seenDevices.end()) return;
+        seenDevices.insert(advLower);
 
         // Debug: print summary for every (allowed) discovered device
         size_t payloadLenDbg = advertisedDevice->getPayloadLength();
@@ -104,50 +186,27 @@ public:
                         // service data payload starts at idx+4, length = len-3
                         uint8_t* sdata = payload + idx + 4;
                         size_t sLen = len - 3;
-                        if (sLen >= 3 && sdata[0] == 0x69) { // 0x69 = SwitchBot Meter
-                            // Typical layout (heuristic): [0]=model, [1]=frameType, [2]=battery,
-                            // [3],[4]=temperature (various endian/scales), [5]=humidity
-                            int battery = -1;
-                            float temperature = NAN;
-                            float humidity = NAN;
-                            if (sLen >= 3) battery = sdata[2];
-
-                            // try multiple temperature interpretations and choose a reasonable one
-                            auto inRange = [](float v){ return v > -40.0f && v < 85.0f; };
-                            if (sLen >= 5) {
-                                // Observed SwitchBot Meter format:
-                                // sdata[4] = integer part offset by +128
-                                // sdata[3] = fractional tenths (0-9)
-                                int temp_int = ((int)sdata[4]) - 128;
-                                float temp_frac = ((float)sdata[3]) / 10.0f;
-                                if (temp_int >= 0) temperature = (float)temp_int + temp_frac;
-                                else temperature = (float)temp_int - temp_frac;
-                                // sanity check: if out of expected range, fall back to 16-bit interpretations
-                                if (!inRange(temperature)) {
-                                    int16_t t_be = (int16_t)((sdata[3] << 8) | sdata[4]);
-                                    float t_be_f = (float)t_be / 10.0f;
-                                    int8_t t_i8 = (int8_t)sdata[3];
-                                    float t_i8_f = (float)t_i8;
-                                    if (inRange(t_be_f)) temperature = t_be_f;
-                                    else if (inRange(t_i8_f)) temperature = t_i8_f;
-                                }
-                            } else if (sLen >= 4) {
-                                int8_t t_i8 = (int8_t)sdata[3];
-                                temperature = (float)t_i8;
+                        // find manufacturer data (type 0xFF) in the AD payload so we can pass it to decoder
+                        uint8_t* mdata = nullptr; size_t mLen = 0;
+                        size_t idx2 = 0;
+                        while (idx2 + 1 < payloadLen) {
+                            uint8_t l2 = payload[idx2];
+                            if (l2 == 0) break;
+                            if (idx2 + l2 >= payloadLen) break;
+                            uint8_t t2 = payload[idx2 + 1];
+                            if (t2 == 0xFF && l2 >= 2) { // Manufacturer Specific
+                                mdata = payload + idx2 + 2;
+                                mLen = l2 - 1;
+                                break;
                             }
-
-                            if (sLen >= 6) humidity = (float)sdata[5];
-
-                            // Print chosen decoding (fall back to raw print if missing)
-                            Serial.printf("  Battery: %d%%\n", (battery >= 0) ? battery : -1);
-                            if (!isnan(temperature)) Serial.printf("  Temperature: %.1f°C\n", temperature);
-                            else Serial.println("  Temperature: <unknown>");
-                            if (!isnan(humidity)) Serial.printf("  Humidity: %.1f%%\n", humidity);
-                            else Serial.println("  Humidity: <unknown>");
-
-                            Serial.println("------------------------------------");
-                            decoded = true;
-                            break;
+                            idx2 += (size_t)l2 + 1;
+                        }
+                        // Accept the usual 0x69 signature, or allow the special-case MAC
+                        if (sLen >= 3 && (sdata[0] == 0x69 || payloadLen == 26)) {
+                            if (decodeFD3D(advLower, sdata, sLen, mdata, mLen, payloadLen == 26)) {
+                                decoded = true;
+                                break;
+                            }
                         }
                     }
                 }
@@ -191,6 +250,8 @@ void setup() {
     
     Serial.printf("Starting scan for %d seconds...\n", scanTime);
     // start initial scan (non-continuous) — we'll restart periodically in loop()
+    // clear any previous seen set before a new scan
+    seenDevices.clear();
     pBLEScan->start(scanTime, false);
     lastScanMillis = millis();
 }
@@ -199,6 +260,8 @@ void loop() {
     // Periodically start a scan every `scanIntervalMs` milliseconds.
     if (!pBLEScan->isScanning() && (millis() - lastScanMillis >= scanIntervalMs)) {
         Serial.println("Scheduled: starting scan...");
+        // clear seen devices for this new scan so duplicates from previous scans are allowed
+        seenDevices.clear();
         pBLEScan->start(scanTime, false);
         lastScanMillis = millis();
     }
