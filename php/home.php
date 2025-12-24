@@ -10,11 +10,14 @@
       p {font-size: 1.2rem;}
       h4 {font-size: 0.8rem;}
       body {margin: 0;}
-      .topnav {overflow: hidden; background-color: #0c6980; color: white; font-size: 1.2rem;}
-      .content {padding: 5px; }
-      .card {background-color: white; box-shadow: 0px 0px 10px 1px rgba(140,140,140,.5); border: 1px solid #0c6980; border-radius: 15px;}
-      .card.header {background-color: #0c6980; color: white; border-bottom-right-radius: 0px; border-bottom-left-radius: 0px; border-top-right-radius: 12px; border-top-left-radius: 12px;}
-      .cards {max-width: 900px; margin: 0 auto; display: grid; grid-gap: 2rem; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));}
+      .topnav {overflow: hidden; background-color: #0c6980; color: white; font-size: 1rem; padding: 6px 10px;}
+      .topnav h3 {margin: 0; font-size: 1rem; line-height: 1;}
+      .content {padding: 2px 6px; }
+      .card {background-color: white; box-shadow: 0px 0px 10px 1px rgba(140,140,140,.5); border: 1px solid #0c6980; border-radius: 15px; padding: 8px 10px;}
+      .card.header {background-color: #1d0c80ff; color: white; border-bottom-right-radius: 0px; border-bottom-left-radius: 0px; border-top-right-radius: 12px; border-top-left-radius: 12px; padding: 6px 8px; box-sizing: border-box; margin: -8px -10px 6px -10px;}
+      .card.header h3 {margin: 0; font-size: 0.95rem; line-height: 1;}
+      .cards {max-width: 900px; margin: 0 auto; display: grid; grid-gap: 0.6rem; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));}
+      .card h3, .card h4, .card p {margin: 4px 0;}
       .reading {font-size: 1.3rem;}
       .packet {color: #bebebe;}
       .temperatureColor {color: #fd7e14;}
@@ -26,7 +29,7 @@
   
   <body>
     <div class="topnav">
-      <h3>TEMPERATURE</h3>
+      <h3>celsius</h3>
     </div>
     <br>
     <!-- __ DISPLAYS MONITORING AND CONTROLLING ____________________________________________________________________________________________ -->
