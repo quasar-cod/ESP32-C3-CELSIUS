@@ -12,6 +12,8 @@
       body {margin: 0;}
       .topnav {overflow: hidden; background-color: #0c6980; color: white; font-size: 1rem; padding: 6px 10px;}
       .topnav h3 {margin: 0; font-size: 1rem; line-height: 1;}
+        .topnav {overflow: hidden; background-color: #0c6980; color: white; font-size: 1rem; padding: 4px 8px; margin: 0 0 0 0;}
+        .topnav h3 {margin: 0; font-size: 1rem; line-height: 1;}
       .content {padding: 2px 6px; }
       .card {background-color: white; box-shadow: 0px 0px 10px 1px rgba(140,140,140,.5); border: 1px solid #0c6980; border-radius: 15px; padding: 8px 10px;}
       .card.header {background-color: #1d0c80ff; color: white; border-bottom-right-radius: 0px; border-bottom-left-radius: 0px; border-top-right-radius: 12px; border-top-left-radius: 12px; padding: 6px 8px; box-sizing: border-box; margin: -8px -10px 6px -10px;}
@@ -31,7 +33,6 @@
     <div class="topnav">
       <h3>celsius</h3>
     </div>
-    <br>
     <!-- __ DISPLAYS MONITORING AND CONTROLLING ____________________________________________________________________________________________ -->
     <div class="content">
       <div class="cards">
@@ -115,7 +116,8 @@
     <br>
     <div class="content">
       <div class="cards">
-        <div class="card header" style="border-radius: 15px;">
+        <div class="card header">
+          <h3 style="font-size: .5rem;">@ V. P.</h3>
         </div>
       </div>
     </div>
@@ -187,7 +189,7 @@
               document.getElementById("ESP_03_Status").innerHTML = myObj.battery;
               document.getElementById("ESP_03_LTRD").innerHTML =  myObj.ls_date + " " + myObj.ls_time;
             }
-            if (myObj.bsensorNameoard == "SWBT04") {
+            if (myObj.sensorName == "SWBT04") {
               document.getElementById("ESP_04_Temp").innerHTML = myObj.temperature;
               document.getElementById("ESP_04_Humd").innerHTML = myObj.humidity;
               document.getElementById("ESP_04_Humd").innerHTML = myObj.humidity;

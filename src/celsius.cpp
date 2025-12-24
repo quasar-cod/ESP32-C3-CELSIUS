@@ -22,8 +22,8 @@ String RSSI = "";
 static const std::unordered_map<std::string, std::string> MAC_NAMES = {
     {"f7:86:17:6f:ad:57", "SWBT01"},
     {"f1:39:38:e5:68:0a", "SWBT02"},
-    {"ca:c8:11:8d:e2:c6", "SWBT03"},
-    {"c0:23:17:1f:65:4f", "SWBT04"}
+    {"c0:23:17:1f:65:4f", "SWBT03"},
+    {"ca:c8:11:8d:e2:c6", "SWBT04"}
 };
 
 #include "time.h"                 // for time() ctime()
@@ -39,9 +39,9 @@ static const std::unordered_map<std::string, std::string> MAC_NAMES = {
 // Edit to add the addresses you want to target (lowercase, colon-separated).
 static const std::vector<std::string> MAC_WHITELIST = {
     "f7:86:17:6f:ad:57",
-    "ca:c8:11:8d:e2:c6",
     "f1:39:38:e5:68:0a",
-    "c0:23:17:1f:65:4f"
+    "c0:23:17:1f:65:4f",
+    "ca:c8:11:8d:e2:c6"
 };
 
 // List MACs to ignore when whitelist is empty (lowercase, colon-separated).
@@ -80,7 +80,9 @@ void updatedata(){
   postData += "&date=" + dateYMD();
   Serial.println(postData);  //--> Print request response payload
   payload = "";
-  http.begin(client,"http://hp-i3/celsius/updatedata.php");  //--> Specify request destination
+//   http.begin(client,"http://hp-i3/celsius/updatedata.php");  //--> Specify request destination
+  http.begin(client,"http://myhomesmart.altervista.org/celsius/updatedata.php");  //--> Specify request destination
+  //NB va usato http e non https
   http.addHeader("Content-Type", "application/x-www-form-urlencoded");  //--> Specify content-type header   
   httpCode = http.POST(postData); //--> Send the request
   payload = http.getString();  //--> Get the response payload
@@ -280,23 +282,14 @@ void setup() {
   Serial.begin(115200);
   delay(2000); 
   Serial.println("\nInitialized serial communications");
-  configTime(0,0, MY_NTP_SERVER); // --> Here is the IMPORTANT ONE LINER needed in your sketch!
-  setenv("TZ","CET-1CEST,M3.5.0/02,M10.5.0/03" ,1);  //  Now adjust the TZ.  Clock settings are adjusted to show the new local time
-  tzset();
-  Serial.println("NTP TZ DST - wait 1 minute");
-// by default, the NTP will be started after 60 secs
-  for (int i =0;i<60;i++){
-     delay(1000);
-     Serial.print(".");
-  }
 // SSID and Password of your WiFi router.
-  const char* ssid = "TIM-39751438_EXT";
+  const char* ssid = "TIM-39751438";
   const char* password = "EFuPktKzk6utU2y5a5SEkUUQ";
   WiFi.persistent(false);
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
   Serial.println("-------------");
-  Serial.print("Connecting");
+  Serial.print("Connecting to wifi");
   int connecting_process_timed_out = 20; // 10 seconds.
   connecting_process_timed_out = connecting_process_timed_out * 2;
   while (WiFi.status() != WL_CONNECTED) {
@@ -318,6 +311,12 @@ void setup() {
     Serial.println("Abilitato");
   }
   Serial.println("-------------");
+  configTime(0,0, MY_NTP_SERVER); // --> Here is the IMPORTANT ONE LINER needed in your sketch!
+  setenv("TZ","CET-1CEST,M3.5.0/02,M10.5.0/03" ,1);  //  Now adjust the TZ.  Clock settings are adjusted to show the new local time
+  tzset();
+  Serial.println("NTP TZ DST - wait 1 minute");
+// by default, the NTP will be started after 60 secs
+//   for (int i =0;i<60;i++){delay(1000);Serial.print(".");}
   Serial.println("orario timezone NTP");
   Serial.println(timeHMS());
   Serial.println("\nStarting BLE Scan for SwitchBot Meter...");
