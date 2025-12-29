@@ -7,7 +7,7 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <ESPmDNS.h>
-#define ADDR  "esp8266" 
+#define ADDR  "celsius" 
 
 //dati per display
 #include <U8g2lib.h>
@@ -16,6 +16,7 @@
 #define SCL_PIN 6
 U8G2_SSD1306_72X40_ER_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);   // EastRising 0.42" OLED
 
+String BOARD = "2";
 int i,j;
 const int ledPin = 8; 
 int pt = 1;
@@ -76,7 +77,8 @@ void updatedata(){
   String payload = "";  //--> Variable for receiving response from HTTP POST.
 
   Serial.println("updatedata.php");
-  postData = "sensorName=" + sensorName;
+  postData = "board=" + BOARD;
+  postData += "&sensorName=" + sensorName;
   postData += "&temperature=" + String(temperature);
   postData += "&humidity=" + String(humidity);
   postData += "&battery=" + String(battery);

@@ -6,6 +6,7 @@
     $dt = date("Y-m-d");     
   //---------------------------------------- Condition to check that POST value is not empty.
   if (!empty($_POST)) {
+    $board = $_POST['board'];
     $sensorName = $_POST['sensorName'];
     $temperature = $_POST['temperature'];
     $humidity = $_POST['humidity'];
@@ -17,11 +18,12 @@
     $pdo = Database::connect();
     //:::::::: The process of entering data into a table.
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-		$sql = "INSERT INTO esp32_record (sensorName,temperature,humidity,battery,RSSI,time,date) values(?, ?, ?, ?, ?, ?, ?)";
+		$sql = "INSERT INTO esp32_record (board,sensorName,temperature,humidity,battery,RSSI,time,date) values(?, ?, ?, ?, ?, ?, ?, ?)";
 		$q = $pdo->prepare($sql);
-		$q->execute(array($sensorName,$temperature,$humidity,$battery,$RSSI,$tm,$dt));
+		$q->execute(array($board,$sensorName,$temperature,$humidity,$battery,$RSSI,$tm,$dt));
     //::::::::
     $myObj = (object)array();
+    $myObj->board = $board;
     $myObj->sensorName = $sensorName;
     $myObj->temperature = $temperature;
     $myObj->humidity = $humidity;

@@ -160,8 +160,8 @@ $sensorNameFromUrl = isset($_GET['sensorName']) ? htmlspecialchars($_GET['sensor
         <button id="btn1d">Giorno</button>
         <button id="btn7d">Settimana</button>
         <button id="btn1mo">Mese</button>
-        <button id="btnPrev">««</button>
-        <button id="btnNext">»»</button>
+        <button id="btnPrev">«««</button>
+        <button id="btnNext">»»»</button>
         
     </div>
 
@@ -239,21 +239,21 @@ $sensorNameFromUrl = isset($_GET['sensorName']) ? htmlspecialchars($_GET['sensor
                                 label: 'Temperature (°C)',
                                 data: tempData,
                                 fill: false,
-                                borderColor: 'rgba(12,105,128,0.9)',
-                                backgroundColor: 'rgba(12,105,128,0.9)',
+                                borderColor: 'rgba(200,85,25,0.9)',
+                                backgroundColor: 'rgba(200,85,25,0.9)',
                                 yAxisID: 'y-temp',
-                                pointRadius: 3,
-                                pointHoverRadius: 6,
+                                pointRadius: 1,
+                                pointHoverRadius: 4,
                             },
                             {
                                 label: 'Humidity (%)',
                                 data: humData,
                                 fill: false,
-                                borderColor: 'rgba(200,85,25,0.9)',
-                                backgroundColor: 'rgba(200,85,25,0.9)',
+                                borderColor: 'rgba(19, 173, 194, 0.9)',
+                                backgroundColor: 'rgba(19, 173, 194, 0.9)',
                                 yAxisID: 'y-hum',
-                                pointRadius: 3,
-                                pointHoverRadius: 6,
+                                pointRadius: 1,
+                                pointHoverRadius: 4,
                             }
                         ]
                     },
