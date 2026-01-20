@@ -26,9 +26,9 @@ float temperature = NAN;
 float humidity = NAN;
 int battery = -1;
 String RSSI = "";
-const char* ssid = "TIM-39751438";// soggiorno
+// const char* ssid = "TIM-39751438";// soggiorno
 // const char* ssid = "TIM-39751438_TENDA";//tavernetta
-// const char* ssid = "TIM-39751438_EXT";// notte
+const char* ssid = "TIM-39751438_EXT";// notte
 
 const char* password = "EFuPktKzk6utU2y5a5SEkUUQ";
 const char* site = "http://myhomesmart.altervista.org/";
@@ -92,6 +92,9 @@ void connect(){
     Serial.println(WiFi.SSID());
     Serial.print("IP address: ");
     Serial.println(WiFi.localIP());
+    String MAC = WiFi.macAddress();
+    Serial.print("MAC Address: ");
+    Serial.println(MAC);
     Serial.println("-------------");
     Serial.println("Abilito dns");
     if (MDNS.begin(ADDR)){
@@ -147,13 +150,26 @@ void updatedata(){
   //NB va usato http e non https
   http.addHeader("Content-Type", "application/x-www-form-urlencoded");  //--> Specify content-type header   
   httpCode = http.POST(postData); //--> Send the request
+  if(httpCode != 200) {
+    Serial.println("REupdatedata.php");
+    postData = "board=" + BOARD+"B";
+    postData += "&sensorName=" + sensorName;
+    postData += "&temperature=" + String(temperature);
+    postData += "&humidity=" + String(humidity);
+    postData += "&battery=" + String(battery);
+    postData += "&RSSI=" + RSSI;
+    postData += "&time=" + timeHMS();
+    postData += "&date=" + dateYMD();
+    http.POST(postData);
+  }
   payload = http.getString();  //--> Get the response payload
   Serial.print("httpCode : ");
   Serial.println(httpCode); //--> Print HTTP return code
   Serial.print("payload  : ");
   Serial.println(payload);  //--> Print request response payload
   Serial.println("-------------");
-  http.end();  //Close connection 
+  http.end();  //Close connection
+
 }
 
 // ----------------------------------------------------------------------
@@ -186,6 +202,7 @@ static bool decodeFD3D(const std::string &advLower, uint8_t* sdata, size_t sLen,
             Serial.println("TIPO 1 MINI");
             Serial.println("------------------------------------");
             updatedata();
+            Ndevices++;
             return true;
         }
         // Fallback to previous candidates if manufacturer-data not present
@@ -227,6 +244,7 @@ static bool decodeFD3D(const std::string &advLower, uint8_t* sdata, size_t sLen,
     Serial.println("TIPO 2 DISPLAY");
     Serial.println("------------------------------------");
     updatedata();
+    Ndevices++;
     return true;
 }
 
@@ -320,7 +338,7 @@ AdvertisedDeviceCallbacks advCallbacks;
 void setup() {
   Serial.begin(115200);
   Serial.println("\nInitialized serial communications");
-  pinMode(ledPin, OUTPUT);  
+  pinMode(ledPin, OUTPUT);
 //dati per display
   Wire.begin(SDA_PIN, SCL_PIN);
   u8g2.begin();
@@ -345,28 +363,28 @@ void setup() {
   pBLEScan->setWindow(100);
   Serial.printf("\nSetting scan for %d seconds...\n", scanTime);
   lastTime=timeHM();
-  Ndevices=0;
 }
 
 void loop() {
   if (!pBLEScan->isScanning() && (timeHM() != lastTime)) {
-    digitalWrite(ledPin,LOW);
     lastTime=timeHM();
     Serial.println("Scheduled: starting scan at: " + lastTime);
     // clear seen devices for this new scan so duplicates from previous scans are allowed
+    Ndevices = 0;
     seenDevices.clear();
+    digitalWrite(ledPin,LOW);
     pBLEScan->start(scanTime, false);
-    Serial.printf("Scan complete: %u devices found\n", (unsigned)seenDevices.size());
+    digitalWrite(ledPin,HIGH);
+    // Serial.printf("Scan complete: %u devices found\n", (unsigned)seenDevices.size());
     //preparo i dati per la funzione updatedata()
     sensorName = "COUNT";
-    Ndevices = (unsigned)seenDevices.size();
     humidity = 0;
     battery = 0;
     RSSI = "0";
     temperature=Ndevices;
-    if(WiFi.waitForConnectResult()== WL_CONNECTED)updatedata(); 
+    Serial.printf("Scan complete: %u devices found\n", Ndevices);
+    if(WiFi.waitForConnectResult() == WL_CONNECTED)updatedata(); 
     else connect();
-    digitalWrite(ledPin,HIGH);
   }
   //dati per display
   u8g2.clearBuffer();
