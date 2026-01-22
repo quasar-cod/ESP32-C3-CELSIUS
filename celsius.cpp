@@ -1,19 +1,24 @@
 #include <Arduino.h>
-#include <NimBLEDevice.h>
 #include <string>
-#include <vector>
+#include <NimBLEDevice.h>
 #include <unordered_set>
 #include <unordered_map>
+#include <vector>
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <ESPmDNS.h>
-#define ADDR  "celsius" 
-
-//dati per display
 #include <U8g2lib.h>
 #include <Wire.h>
+#include "time.h"
+#include "miotime.h"
+
+#define ADDR  "celsius" 
 #define SDA_PIN 5
 #define SCL_PIN 6
+#define MY_NTP_SERVER "it.pool.ntp.org"           
+#define MY_TZ "CET-1CEST,M3.5.0/02,M10.5.0/03"   
+#define SCAN_TIME_S 10
+#define SCAN_INTERVAL_MS 60000UL
 U8G2_SSD1306_72X40_ER_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE);   // EastRising 0.42" OLED
 
 int Ndevices=0;
@@ -26,24 +31,16 @@ float temperature = NAN;
 float humidity = NAN;
 int battery = -1;
 String RSSI = "";
+
 // const char* ssid = "TIM-39751438";// soggiorno
 // const char* ssid = "TIM-39751438_TENDA";//tavernetta
 const char* ssid = "TIM-39751438_EXT";// notte
-
 const char* password = "EFuPktKzk6utU2y5a5SEkUUQ";
 const char* site = "http://myhomesmart.altervista.org/";
 //const char* site = "http://hp-i3/tappa/";
 
 int connecting_process_timed_out;
 
-#include "time.h"                 // for time() ctime()
-#include "miotime.h"                   // for time() ctime()
-#define MY_NTP_SERVER "it.pool.ntp.org"           
-#define MY_TZ "CET-1CEST,M3.5.0/02,M10.5.0/03"   
-
-// Configuration via #define
-#define SCAN_TIME_S 10
-#define SCAN_INTERVAL_MS 60000UL
 // Use the keys of MAC_NAMES as the implicit whitelist (lowercase, colon-separated MACs)
 
 // Map MAC (lowercase, colon-separated) to human-friendly sensor name
@@ -54,7 +51,7 @@ static const std::unordered_map<std::string, std::string> MAC_NAMES = {
     {"ca:c8:11:8d:e2:c6", "SWBT04"}
 };
 
-int scanTime = SCAN_TIME_S; // Scan duration in seconds (Scan will restart automatically)
+int scanTime = 10; // Scan duration in seconds (Scan will restart automatically)
 NimBLEScan* pBLEScan;
 String lastTime;
 // Track devices seen during the current scan to avoid duplicate prints
@@ -169,7 +166,6 @@ void updatedata(){
   Serial.println(payload);  //--> Print request response payload
   Serial.println("-------------");
   http.end();  //Close connection
-
 }
 
 // ----------------------------------------------------------------------
@@ -386,7 +382,6 @@ void loop() {
     if(WiFi.waitForConnectResult() == WL_CONNECTED)updatedata(); 
     else connect();
   }
-  //dati per display
   u8g2.clearBuffer();
   u8g2.setCursor(0, 20);
   u8g2.print(timeHMS());

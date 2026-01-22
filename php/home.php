@@ -12,11 +12,12 @@
       body {margin: 0;}
       .topnav {overflow: hidden; background-color: #0c6980; color: white; font-size: 1rem; padding: 6px 10px;}
       .topnav h3 {margin: 0; font-size: 1rem; line-height: 1;}
-        .topnav {overflow: hidden; background-color: #0c6980; color: white; font-size: 1rem; padding: 4px 8px; margin: 0 0 0 0;}
-        .topnav h3 {margin: 0; font-size: 1rem; line-height: 1;}
+      .topnav {overflow: hidden; background-color: #0c6980; color: white; font-size: 1rem; padding: 4px 8px; margin: 0 0 0 0;}
+      .topnav h3 {margin: 0; font-size: 1rem; line-height: 1;}
       .content {padding: 2px 6px; }
       .card {background-color: white; box-shadow: 0px 0px 10px 1px rgba(140,140,140,.5); border: 1px solid #0c6980; border-radius: 15px; padding: 8px 10px;}
       .card.header {background-color: #1d0c80ff; color: white; border-bottom-right-radius: 0px; border-bottom-left-radius: 0px; border-top-right-radius: 12px; border-top-left-radius: 12px; padding: 6px 8px; box-sizing: border-box; margin: -8px -10px 6px -10px;}
+      .card.header2 {background-color: rgb(128, 12, 41); color: white; border-bottom-right-radius: 0px; border-bottom-left-radius: 0px; border-top-right-radius: 12px; border-top-left-radius: 12px; padding: 6px 8px; box-sizing: border-box; margin: -8px -10px 6px -10px;}
       .card.header h3 {margin: 0; font-size: 0.95rem; line-height: 1;}
       .cards {max-width: 900px; margin: 0 auto; display: grid; grid-gap: 0.6rem; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));}
       .card h3, .card h4, .card p {margin: 4px 0;}
@@ -95,7 +96,8 @@
           <button onclick="OpenChart('SWBT03')">Chart</button>
           <h3 style="font-size: 0.7rem;"></h3>
         </div>
-        <!-- ======================================================================================================= -->        <div class="card">
+        <!-- ======================================================================================================= -->        
+        <div class="card">
           <div class="card header">
             <h3 style="font-size: 1rem;">giardino</h3>
           </div>
@@ -112,6 +114,46 @@
           <h3 style="font-size: 0.7rem;"><span id="ESP_04_LTRD"></span><span> batt: </span><span id="ESP_04_Status"></span></h3>
           <button onclick="OpenRecordTable('esp32_04')">Hist</button>
           <button onclick="OpenChart('SWBT04')">Chart</button>
+          <h3 style="font-size: 0.7rem;"></h3>
+        </div>
+        <!-- ======================================================================================================= -->
+        <div class="card">
+          <div class="card header2">
+            <h3 style="font-size: 1rem;">termo anteriore</h3>
+          </div>
+          <div style="display: flex; justify-content: space-around; align-items: center; margin-bottom: 10px;">
+            <div style="text-align: center;">
+              <h4 class="temperatureColor" style="margin-bottom: 0;"><i class="fas fa-thermometer-half"></i> Temp</h4>
+              <p class="temperatureColor" style="margin-top: 0;"><span class="reading"><span id="ESP_05_Temp"></span> &deg;C</span></p>
+            </div>
+            <div style="text-align: center;">
+              <h4 class="humidityColor" style="margin-bottom: 0;"><i class="fas fa-tint"></i> Humd</h4>
+              <p class="humidityColor" style="margin-top: 0;"><span class="reading"><span id="ESP_05_Humd"></span> &percnt;</span></p>
+            </div>
+          </div>
+          <h3 style="font-size: 0.7rem;"><span id="ESP_05_LTRD"></span><span> batt: </span><span id="ESP_05_Status"></span></h3>
+          <button onclick="OpenRecordTable('esp32_05')">Hist</button>
+          <button onclick="OpenChart('SWBT05')">Chart</button>
+          <h3 style="font-size: 0.7rem;"></h3>
+        </div>
+        <!-- ======================================================================================================= -->
+        <div class="card">
+          <div class="card header2">
+            <h3 style="font-size: 1rem;">termo posteriore</h3>
+          </div>
+          <div style="display: flex; justify-content: space-around; align-items: center; margin-bottom: 10px;">
+            <div style="text-align: center;">
+              <h4 class="temperatureColor" style="margin-bottom: 0;"><i class="fas fa-thermometer-half"></i> Temp</h4>
+              <p class="temperatureColor" style="margin-top: 0;"><span class="reading"><span id="ESP_06_Temp"></span> &deg;C</span></p>
+            </div>
+            <div style="text-align: center;">
+              <h4 class="humidityColor" style="margin-bottom: 0;"><i class="fas fa-tint"></i> Humd</h4>
+              <p class="humidityColor" style="margin-top: 0;"><span class="reading"><span id="ESP_06_Humd"></span> &percnt;</span></p>
+            </div>
+          </div>
+          <h3 style="font-size: 0.7rem;"><span id="ESP_06_LTRD"></span><span> batt: </span><span id="ESP_06_Status"></span></h3>
+          <button onclick="OpenRecordTable('esp32_06')">Hist</button>
+          <button onclick="OpenChart('SWBT06')">Chart</button>
           <h3 style="font-size: 0.7rem;"></h3>
         </div>
         <!-- ======================================================================================================= -->
@@ -144,11 +186,21 @@
       document.getElementById("ESP_04_Humd").innerHTML = "NN";
       document.getElementById("ESP_04_Status").innerHTML = "NN";
       document.getElementById("ESP_04_LTRD").innerHTML = "NN";      
+      document.getElementById("ESP_05_Temp").innerHTML = "NN"; 
+      document.getElementById("ESP_05_Humd").innerHTML = "NN";
+      document.getElementById("ESP_05_Status").innerHTML = "NN";
+      document.getElementById("ESP_05_LTRD").innerHTML = "NN";      
+      document.getElementById("ESP_06_Temp").innerHTML = "NN"; 
+      document.getElementById("ESP_06_Humd").innerHTML = "NN";
+      document.getElementById("ESP_06_Status").innerHTML = "NN";
+      document.getElementById("ESP_06_LTRD").innerHTML = "NN";      
       //------------------------------------------------------------
       Get_Data("SWBT01");
       Get_Data("SWBT02");
       Get_Data("SWBT03");
       Get_Data("SWBT04");
+      Get_Data("SWBT05");
+      Get_Data("SWBT06");
       setInterval(myTimer, 60000);
       //------------------------------------------------------------
       function myTimer() {
@@ -156,6 +208,8 @@
         Get_Data("SWBT02");
         Get_Data("SWBT03");
         Get_Data("SWBT04");
+        Get_Data("SWBT05");
+        Get_Data("SWBT06");
       }
       //------------------------------------------------------------
       function OpenRecordTable(id) {
@@ -207,9 +261,20 @@
             if (myObj.sensorName == "SWBT04") {
               document.getElementById("ESP_04_Temp").innerHTML = myObj.temperature;
               document.getElementById("ESP_04_Humd").innerHTML = myObj.humidity;
-              document.getElementById("ESP_04_Humd").innerHTML = myObj.humidity;
               document.getElementById("ESP_04_Status").innerHTML = myObj.battery;
               document.getElementById("ESP_04_LTRD").innerHTML =  myObj.ls_date + " " + myObj.ls_time;
+            }
+            if (myObj.sensorName == "SWBT05") {
+              document.getElementById("ESP_05_Temp").innerHTML = myObj.temperature;
+              document.getElementById("ESP_05_Humd").innerHTML = myObj.humidity;
+              document.getElementById("ESP_05_Status").innerHTML = myObj.battery;
+              document.getElementById("ESP_05_LTRD").innerHTML =  myObj.ls_date + " " + myObj.ls_time;
+            }
+            if (myObj.sensorName == "SWBT06") {
+              document.getElementById("ESP_06_Temp").innerHTML = myObj.temperature;
+              document.getElementById("ESP_06_Humd").innerHTML = myObj.humidity;
+              document.getElementById("ESP_06_Status").innerHTML = myObj.battery;
+              document.getElementById("ESP_06_LTRD").innerHTML =  myObj.ls_date + " " + myObj.ls_time;
             }
           }
         };
