@@ -52,7 +52,7 @@
             </div>
           </div>
           <h3 style="font-size: 0.7rem;"><span id="ESP_01_LTRD"></span><span> batt: </span><span id="ESP_01_Status"></span></h3>
-          <button onclick="OpenRecordTable('esp32_01')">Hist</button>
+          <button onclick="OpenRecordTable('SWBT01')">Hist</button>
           <button onclick="OpenChart('SWBT01')">Chart</button>
           <h3 style="font-size: 0.7rem;"></h3>
         </div>
@@ -72,7 +72,7 @@
             </div>
           </div>
           <h3 style="font-size: 0.7rem;"><span id="ESP_02_LTRD"></span><span> batt: </span><span id="ESP_02_Status"></span></h3>
-          <button onclick="OpenRecordTable('esp32_02')">Hist</button>
+          <button onclick="OpenRecordTable('SWBT02')">Hist</button>
           <button onclick="OpenChart('SWBT02')">Chart</button>
           <h3 style="font-size: 0.7rem;"></h3>
         </div>
@@ -92,7 +92,7 @@
             </div>
           </div>
           <h3 style="font-size: 0.7rem;"><span id="ESP_03_LTRD"></span><span> batt: </span><span id="ESP_03_Status"></span></h3>
-          <button onclick="OpenRecordTable('esp32_03')">Hist</button>
+          <button onclick="OpenRecordTable('SWBT03')">Hist</button>
           <button onclick="OpenChart('SWBT03')">Chart</button>
           <h3 style="font-size: 0.7rem;"></h3>
         </div>
@@ -112,7 +112,7 @@
             </div>
           </div>
           <h3 style="font-size: 0.7rem;"><span id="ESP_04_LTRD"></span><span> batt: </span><span id="ESP_04_Status"></span></h3>
-          <button onclick="OpenRecordTable('esp32_04')">Hist</button>
+          <button onclick="OpenRecordTable('SWBT04')">Hist</button>
           <button onclick="OpenChart('SWBT04')">Chart</button>
           <h3 style="font-size: 0.7rem;"></h3>
         </div>
@@ -132,7 +132,7 @@
             </div>
           </div>
           <h3 style="font-size: 0.7rem;"><span id="ESP_05_LTRD"></span><span> batt: </span><span id="ESP_05_Status"></span></h3>
-          <button onclick="OpenRecordTable('esp32_05')">Hist</button>
+          <button onclick="OpenRecordTable('SWBT05')">Hist</button>
           <button onclick="OpenChart('SWBT05')">Chart</button>
           <h3 style="font-size: 0.7rem;"></h3>
         </div>
@@ -152,7 +152,7 @@
             </div>
           </div>
           <h3 style="font-size: 0.7rem;"><span id="ESP_06_LTRD"></span><span> batt: </span><span id="ESP_06_Status"></span></h3>
-          <button onclick="OpenRecordTable('esp32_06')">Hist</button>
+          <button onclick="OpenRecordTable('SWBT06')">Hist</button>
           <button onclick="OpenChart('SWBT06')">Chart</button>
           <h3 style="font-size: 0.7rem;"></h3>
         </div>
@@ -214,7 +214,7 @@
       //------------------------------------------------------------
       function OpenRecordTable(id) {
         console.log("OpenRecordTable: ", id);
-        window.open('recordtable.php?id=' + id );
+        window.open('table.php?sensorName=' + id );
       }
       //------------------------------------------------------------
       function OpenChart(sensor) {
