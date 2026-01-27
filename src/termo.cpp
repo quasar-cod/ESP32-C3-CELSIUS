@@ -14,7 +14,7 @@
 U8G2_SSD1306_72X40_ER_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE);   // EastRising 0.42" OLED
 #define MY_NTP_SERVER "it.pool.ntp.org"
 #define MY_TZ "CET-1CEST,M3.5.0/02,M10.5.0/03"
-#define ADDR  "celsius" 
+#define ADDR  "cejjjjlsius" 
 
 // --- CONFIGURATION ---
 const int ledPin = 8; // ESP32-C3 Built-in LED
@@ -23,7 +23,7 @@ int scanTime = 10; // Scan duration in seconds (Scan will restart automatically)
 
 // const char* ssid = "TIM-39751438";// soggiorno
 // const char* ssid = "TIM-39751438_TENDA";//tavernetta
-const char* ssid = "TIM-39751438_EXT";
+const char* ssid = "TIM-39751438";
 const char* password = "EFuPktKzk6utU2y5a5SEkUUQ";
 const char* site = "http://myhomesmart.altervista.org/celsius/updatedata.php";
 
