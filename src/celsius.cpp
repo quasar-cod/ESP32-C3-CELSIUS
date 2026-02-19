@@ -22,7 +22,7 @@
 U8G2_SSD1306_72X40_ER_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE);   // EastRising 0.42" OLED
 
 int Ndevices=0;
-String BOARD = "2";
+String BOARD = "3";
 int i,j;
 const int ledPin = 8; //logica invertita
 int pt = 1;
@@ -32,24 +32,14 @@ float humidity = NAN;
 int battery = -1;
 String RSSI = "";
 
-// const char* ssid = "TIM-39751438";// soggiorno
-// const char* ssid = "TIM-39751438_TENDA";//tavernetta
-const char* ssid = "TIM-39751438_EXT";// notte
-const char* password = "EFuPktKzk6utU2y5a5SEkUUQ";
+// const char* ssid = "TIM-24326654";// soggiorno
+// const char* ssid = "TIM-24326654_TENDA";//tavernetta
+const char* ssid = "TIM-24326654_EXT";// notte
+const char* password = "T9ZDHXACUfdTUC33DcTCASsz";
 const char* site = "http://myhomesmart.altervista.org/";
 //const char* site = "http://hp-i3/tappa/";
 
 int connecting_process_timed_out;
-
-// Use the keys of MAC_NAMES as the implicit whitelist (lowercase, colon-separated MACs)
-
-// Map MAC (lowercase, colon-separated) to human-friendly sensor name
-static const std::unordered_map<std::string, std::string> MAC_NAMES = {
-    {"f7:86:17:6f:ad:57", "SWBT01"},
-    {"f1:39:38:e5:68:0a", "SWBT02"},
-    {"c0:23:17:1f:65:4f", "SWBT03"},
-    {"ca:c8:11:8d:e2:c6", "SWBT04"}
-};
 
 int scanTime = 10; // Scan duration in seconds (Scan will restart automatically)
 NimBLEScan* pBLEScan;
@@ -109,10 +99,13 @@ void tmz(){
   configTime(0,0, MY_NTP_SERVER); //sulle ESP32 occorre separare in tre righe 
   setenv("TZ","CET-1CEST,M3.5.0/02,M10.5.0/03" ,1);  //  Now adjust the TZ.  Clock settings are adjusted to show the new local time
   tzset();
-  Serial.println("***********************************************");
-  Serial.println("NTP TZ DST - wait 1 minute");
-  for (int i=0;i<44;i++){
-    Serial.print(".");//2 flash 1.4 secondi
+    time_t now = time(nullptr);
+  int ntpRetry = 0;
+  // 1738713600 = Thursday, February 5, 2026 00:00:00
+  while (now < 1738713600 && ntpRetry < 100) { 
+    delay(1000); // Small delay to let the UDP packet arrive
+    now = time(nullptr); 
+    ntpRetry++;
     digitalWrite(ledPin,LOW);
     delay(100);
     digitalWrite(ledPin,HIGH);
@@ -120,7 +113,9 @@ void tmz(){
     digitalWrite(ledPin,LOW);
     delay(100);
     digitalWrite(ledPin,HIGH);
-    delay(1000);
+  }
+  if (now < 1738713600) {
+    ESP.restart();
   }
 }
 //************************************************************************************** */
@@ -131,7 +126,7 @@ void updatedata(){
   String postData = ""; //--> Variables sent for HTTP POST request data.
   String payload = "";  //--> Variable for receiving response from HTTP POST.
 
-  Serial.println("updatedata.php");
+  Serial.println("primo updatedata.php");
   postData = "board=" + BOARD;
   postData += "&sensorName=" + sensorName;
   postData += "&temperature=" + String(temperature);
@@ -140,6 +135,7 @@ void updatedata(){
   postData += "&RSSI=" + RSSI;
   postData += "&time=" + timeHMS();
   postData += "&date=" + dateYMD();
+  Serial.print("postData: ");  //--> Print request response payload
   Serial.println(postData);  //--> Print request response payload
   payload = "";
 // http.begin(client,"http://hp-i3/celsius/updatedata.php");  //--> Specify request destination
@@ -147,8 +143,10 @@ void updatedata(){
   //NB va usato http e non https
   http.addHeader("Content-Type", "application/x-www-form-urlencoded");  //--> Specify content-type header   
   httpCode = http.POST(postData); //--> Send the request
-  if(httpCode != 200) {
-    Serial.println("REupdatedata.php");
+  if(httpCode != 200) {//faccio un secondo tentativo
+    Serial.print("httpCode : ");
+    Serial.println(httpCode); //--> Print HTTP return code
+    Serial.println("secondo updatedata.php");
     postData = "board=" + BOARD+"B";
     postData += "&sensorName=" + sensorName;
     postData += "&temperature=" + String(temperature);
@@ -168,10 +166,20 @@ void updatedata(){
   http.end();  //Close connection
 }
 
+// ,
+//     {"b0:e9:fe:8e:9c:2a", "SWBT05"},
+//     {"b0:e9:fe:cb:04:8d", "SWBT06"}
 // ----------------------------------------------------------------------
 // 1. DATA CALLBACKS (AdvertisedDeviceCallbacks):
 //    Handles processing data when a device is found.
 // ----------------------------------------------------------------------
+// Map MAC (lowercase, colon-separated) to human-friendly sensor name
+static const std::unordered_map<std::string, std::string> MAC_NAMES = {
+    {"f7:86:17:6f:ad:57", "SWBT01"},
+    {"f1:39:38:e5:68:0a", "SWBT02"},
+    {"c0:23:17:1f:65:4f", "SWBT03"},
+    {"ca:c8:11:8d:e2:c6", "SWBT04"}
+};
 
 // Decode SwitchBot FD3D service data. Returns true if decoded and printed.
 static bool decodeFD3D(const std::string &advLower, uint8_t* sdata, size_t sLen, uint8_t* mdata=nullptr, size_t mLen=0, bool useAlt=false) {
@@ -359,6 +367,7 @@ void setup() {
   pBLEScan->setWindow(100);
   Serial.printf("\nSetting scan for %d seconds...\n", scanTime);
   lastTime=timeHM();
+  Serial.printf("Time %s", lastTime);
 }
 
 void loop() {
